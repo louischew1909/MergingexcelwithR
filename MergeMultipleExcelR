@@ -1,0 +1,39 @@
+
+#set working directory
+setwd("*Directory*")
+
+
+#my files
+my_files <-  list.files(path = "*Directory*", pattern = "*xlsx", all.files = FALSE,
+                        full.names = FALSE, recursive = FALSE,
+                        ignore.case = FALSE, include.dirs = FALSE, no.. = FALSE)
+
+#number of sheets
+my_sheets <- excel_sheets(my_files[[1]])
+sheets_wanted <-  my_sheets[[3]]
+
+#reading excel
+
+df.list <- lapply(my_files, read_excel, sheets_wanted)
+
+#consolidated all files into one
+df_2 <- bind_rows(df.list, .id = "id")
+
+# clear first few rows as well as Null values
+
+df_1 <- df_2[!(df_2$Positive =="Neutral" | df_2$Positive =="Positive"|df_2$Positive =="Negative"|df_2$Positive =="Total" |is.na(df_2$Positive)|(df_2$Positive =="Date" )) ,]
+
+#delete unnecessary columns
+
+df_3 <- df_1[, -c(1,19:29)]
+
+#rename headings
+colnames(df_3)
+library(dplyr)
+colnames(df_3) <-  c('Date', 'Publication', 'Medium', 'Category', 'Type',
+                      'Section', 'Headline', 'Tone', 'Journalist', 'Primary', 'Secondary', 
+                      'Tertiary','MPA_Mention', 'Maritime_SG_Mention','PR_Value','Remarks')
+         
+                
+#export to excel for analysis on tableau
+write.csv(df_3,"*Directorywithexcelname//consolidated.xlsx*", row.names = FALSE)
